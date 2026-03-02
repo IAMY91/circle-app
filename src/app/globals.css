@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  /* Shared flame teardrop shape */
+  .flame-shape {
+    border-radius: 50% 50% 30% 30% / 60% 60% 40% 40%;
+    transform-origin: center bottom;
+  }
+
+  /* Range input styling */
+  input[type='range'] {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #f59e0b;
+    cursor: pointer;
+  }
+  input[type='range']::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #f59e0b;
+    cursor: pointer;
+    border: none;
+  }
+}
