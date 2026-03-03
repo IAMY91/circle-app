@@ -1,7 +1,9 @@
 'use client';
 
+import { useRef, useEffect } from 'react';
 import { useCircleState } from '@/hooks/useCircleState';
 import { useTimer } from '@/hooks/useTimer';
+import { useAudio } from '@/hooks/useAudio';
 import { ChatMessage, Mood } from '@/types';
 import CircleLayout from './CircleLayout';
 import BottomBar from '@/components/controls/BottomBar';
@@ -21,6 +23,18 @@ export default function CircleRoom() {
     drawOracleCard,
   } = useCircleState();
   const { start, pause, reset } = useTimer(dispatch, state.timerRunning);
+  const { play } = useAudio();
+
+  // Play bell when timer reaches zero
+  const prevTimerRef = useRef(state.timerSeconds);
+  const playRef = useRef(play);
+  playRef.current = play;
+  useEffect(() => {
+    if (prevTimerRef.current > 0 && state.timerSeconds === 0) {
+      playRef.current('bell');
+    }
+    prevTimerRef.current = state.timerSeconds;
+  }, [state.timerSeconds]);
 
   const handleTileClick = (participantId: string) => {
     if (state.isPassingStickMode) {
@@ -147,6 +161,7 @@ export default function CircleRoom() {
           };
           dispatch({ type: 'SEND_MESSAGE', message });
         }}
+        onReact={(messageId, emoji) => dispatch({ type: 'ADD_REACTION', messageId, emoji })}
         onClose={() => dispatch({ type: 'TOGGLE_CHAT' })}
       />
 

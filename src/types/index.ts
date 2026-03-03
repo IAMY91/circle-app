@@ -27,6 +27,7 @@ export interface ChatMessage {
   name: string;
   text: string;
   timestamp: number;
+  reactions?: Record<string, number>;
 }
 
 export interface CircleState {
@@ -65,4 +66,5 @@ export type CircleAction =
   | { type: 'SET_THEME'; theme: Theme }
   | { type: 'SHOW_ORACLE_CARD'; card: OracleCard }
   | { type: 'CLOSE_ORACLE_CARD' }
-  | { type: 'TOGGLE_SEAL' };
+  | { type: 'TOGGLE_SEAL' }
+  | { type: 'ADD_REACTION'; messageId: string; emoji: string };

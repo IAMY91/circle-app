@@ -6,6 +6,7 @@ import TimerPanel from './TimerPanel';
 import Soundboard from './Soundboard';
 import TensionBarometer from './TensionBarometer';
 import VibeQuadrant from './VibeQuadrant';
+import MeditationLibrary from './MeditationLibrary';
 
 interface Props {
   isOpen: boolean;
@@ -141,6 +142,11 @@ export default function FacilitatorSidebar({
 
             <hr className="border-stone-800" />
 
+            {/* ── Meditation Library ─────────────────────────── */}
+            <MeditationLibrary />
+
+            <hr className="border-stone-800" />
+
             {/* ── Sensory & Ritual ───────────────────────────── */}
             <div>
               <h3 className={section}>Sensory &amp; Ritual</h3>
@@ -166,14 +172,13 @@ export default function FacilitatorSidebar({
                 </button>
 
                 {/* Music placeholder */}
-                <button
-                  disabled
-                  className="bg-stone-800 rounded-lg px-3 py-2 text-xs text-stone-600 flex items-center gap-1.5 cursor-not-allowed"
-                >
-                  <span>🎵</span>
-                  <span>Spotify</span>
-                  <span className="text-stone-700 text-xs">soon</span>
-                </button>
+                <div className="bg-stone-900/60 rounded-lg px-3 py-2 flex items-center gap-1.5 border border-stone-800/60">
+                  <span className="text-base">🎵</span>
+                  <div>
+                    <div className="text-xs text-stone-500 font-medium">Spotify</div>
+                    <div className="text-xs text-stone-700">coming soon</div>
+                  </div>
+                </div>
               </div>
             </div>
 

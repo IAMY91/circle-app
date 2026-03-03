@@ -1,8 +1,35 @@
 'use client';
 
 import { useReducer, useEffect, useMemo } from 'react';
-import { CircleState, CircleAction, OracleCard } from '@/types';
+import { CircleState, CircleAction, ChatMessage, OracleCard } from '@/types';
 import { MOCK_PARTICIPANTS } from '@/lib/mockParticipants';
+
+const now = Date.now();
+const INITIAL_MESSAGES: ChatMessage[] = [
+  {
+    id: 'msg-0',
+    participantId: 'system',
+    name: 'Circle Guide',
+    text: 'Welcome. Take a breath and arrive fully. 🌿',
+    timestamp: now - 8 * 60 * 1000,
+    reactions: { '🙏': 3, '💛': 2 },
+  },
+  {
+    id: 'msg-1',
+    participantId: 'p2',
+    name: 'Luna',
+    text: 'Grateful to hold this space with you all.',
+    timestamp: now - 5 * 60 * 1000,
+    reactions: { '💛': 4 },
+  },
+  {
+    id: 'msg-2',
+    participantId: 'p3',
+    name: 'Aria',
+    text: 'Holding with **love** and *presence*.',
+    timestamp: now - 2 * 60 * 1000,
+  },
+];
 
 export const ORACLE_DECK: OracleCard[] = [
   { icon: '🌱', title: 'Grounding', text: '"Connect with your roots before reaching for the sky."' },
@@ -26,7 +53,7 @@ const initialState: CircleState = {
   localParticipantId: 'local',
   activeSpeakerId: null,
   centralElement: 'fire',
-  chatMessages: [],
+  chatMessages: INITIAL_MESSAGES,
   isChatOpen: false,
   isSidebarOpen: false,
   timerSeconds: 0,
@@ -115,6 +142,21 @@ function reducer(state: CircleState, action: CircleAction): CircleState {
       return { ...state, oracleCard: null };
     case 'TOGGLE_SEAL':
       return { ...state, isCircleSealed: !state.isCircleSealed };
+    case 'ADD_REACTION':
+      return {
+        ...state,
+        chatMessages: state.chatMessages.map(msg =>
+          msg.id === action.messageId
+            ? {
+                ...msg,
+                reactions: {
+                  ...msg.reactions,
+                  [action.emoji]: ((msg.reactions ?? {})[action.emoji] ?? 0) + 1,
+                },
+              }
+            : msg
+        ),
+      };
     default:
       return state;
   }
