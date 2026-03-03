@@ -1,10 +1,18 @@
 export type Mood = '😌' | '😢' | '😤' | '🤩' | '😰' | '😊' | '😔' | '🔥';
-export type CentralElement = 'candle' | 'fire';
+export type CentralElement = 'fire' | 'candle' | 'altar';
+export type Theme = 'earth' | 'water';
+
+export interface OracleCard {
+  icon: string;
+  title: string;
+  text: string;
+}
 
 export interface Participant {
   id: string;
   name: string;
-  avatarColor: string; // Tailwind gradient classes e.g. 'from-violet-500 to-purple-700'
+  emoji: string;
+  avatarColor: string;
   isMuted: boolean;
   isVideoOff: boolean;
   handRaised: boolean;
@@ -31,6 +39,11 @@ export interface CircleState {
   isSidebarOpen: boolean;
   timerSeconds: number;
   timerRunning: boolean;
+  talkingStickHolderId: string | null;
+  isPassingStickMode: boolean;
+  theme: Theme;
+  oracleCard: OracleCard | null;
+  isCircleSealed: boolean;
 }
 
 export type CircleAction =
@@ -46,4 +59,10 @@ export type CircleAction =
   | { type: 'SET_TIMER'; seconds: number }
   | { type: 'TICK_TIMER' }
   | { type: 'SET_TIMER_RUNNING'; running: boolean }
-  | { type: 'SET_ACTIVE_SPEAKER'; id: string | null };
+  | { type: 'SET_ACTIVE_SPEAKER'; id: string | null }
+  | { type: 'SET_TALKING_STICK'; participantId: string | null }
+  | { type: 'SET_PASSING_STICK_MODE'; active: boolean }
+  | { type: 'SET_THEME'; theme: Theme }
+  | { type: 'SHOW_ORACLE_CARD'; card: OracleCard }
+  | { type: 'CLOSE_ORACLE_CARD' }
+  | { type: 'TOGGLE_SEAL' };

@@ -4,6 +4,7 @@ export const MOCK_PARTICIPANTS: Participant[] = [
   {
     id: 'local',
     name: 'You',
+    emoji: '👩🏼‍💼',
     avatarColor: 'from-violet-500 to-purple-700',
     isMuted: false,
     isVideoOff: false,
@@ -15,6 +16,7 @@ export const MOCK_PARTICIPANTS: Participant[] = [
   {
     id: 'p2',
     name: 'Luna M.',
+    emoji: '👩🏾',
     avatarColor: 'from-emerald-500 to-teal-700',
     isMuted: false,
     isVideoOff: false,
@@ -25,6 +27,7 @@ export const MOCK_PARTICIPANTS: Participant[] = [
   {
     id: 'p3',
     name: 'Sara K.',
+    emoji: '👩🏻',
     avatarColor: 'from-rose-500 to-pink-700',
     isMuted: true,
     isVideoOff: false,
@@ -35,6 +38,7 @@ export const MOCK_PARTICIPANTS: Participant[] = [
   {
     id: 'p4',
     name: 'River T.',
+    emoji: '🧔🏽',
     avatarColor: 'from-amber-500 to-orange-700',
     isMuted: false,
     isVideoOff: false,
@@ -45,6 +49,7 @@ export const MOCK_PARTICIPANTS: Participant[] = [
   {
     id: 'p5',
     name: 'Jade L.',
+    emoji: '🧕🏼',
     avatarColor: 'from-sky-500 to-blue-700',
     isMuted: false,
     isVideoOff: true,
@@ -55,6 +60,7 @@ export const MOCK_PARTICIPANTS: Participant[] = [
   {
     id: 'p6',
     name: 'Aria N.',
+    emoji: '🧑🏿',
     avatarColor: 'from-lime-500 to-green-700',
     isMuted: false,
     isVideoOff: false,
@@ -65,6 +71,7 @@ export const MOCK_PARTICIPANTS: Participant[] = [
   {
     id: 'p7',
     name: 'Kai B.',
+    emoji: '🧑🏼',
     avatarColor: 'from-fuchsia-500 to-purple-700',
     isMuted: true,
     isVideoOff: false,
@@ -75,6 +82,7 @@ export const MOCK_PARTICIPANTS: Participant[] = [
   {
     id: 'p8',
     name: 'Nova W.',
+    emoji: '👩🏻‍🦱',
     avatarColor: 'from-cyan-500 to-teal-700',
     isMuted: false,
     isVideoOff: false,

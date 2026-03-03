@@ -12,6 +12,9 @@ interface Props {
   localParticipantId: string;
   centralElement: CentralElement;
   avgTension: number;
+  talkingStickHolderId: string | null;
+  isPassingStickMode: boolean;
+  onTileClick: (participantId: string) => void;
 }
 
 export default function CircleLayout({
@@ -20,6 +23,9 @@ export default function CircleLayout({
   localParticipantId,
   centralElement,
   avgTension,
+  talkingStickHolderId,
+  isPassingStickMode,
+  onTileClick,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState(600);
@@ -79,7 +85,10 @@ export default function CircleLayout({
               participant={participant}
               isSpeaking={activeSpeakerId === participant.id}
               isLocal={participant.id === localParticipantId}
+              hasTalkingStick={talkingStickHolderId === participant.id}
+              isPassingStickMode={isPassingStickMode}
               size={tileSize}
+              onClick={() => onTileClick(participant.id)}
             />
           </div>
         );

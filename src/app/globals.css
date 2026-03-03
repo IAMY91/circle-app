@@ -2,6 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Theme CSS variables ─────────────────────────────────────── */
+:root {
+  --accent-glow: 255, 157, 0;   /* orange — earth */
+  --breath-speed: 6s;
+}
+[data-theme='water'] {
+  --accent-glow: 0, 212, 255;   /* cyan   — water */
+}
+
+/* ── Breathing background pulse ──────────────────────────────── */
+@keyframes breath {
+  0%, 100% { opacity: 0.05; transform: scale(1); }
+  50%       { opacity: 0.18; transform: scale(1.06); }
+}
+.breath-bg {
+  animation: breath var(--breath-speed, 6s) infinite ease-in-out;
+  background: radial-gradient(
+    circle at center,
+    rgba(var(--accent-glow), 1) 0%,
+    transparent 18%
+  );
+}
+
+/* ── Passing-stick mode cursor ───────────────────────────────── */
+.passing-stick-mode { cursor: cell !important; }
+
 @layer utilities {
   /* Shared flame teardrop shape */
   .flame-shape {
