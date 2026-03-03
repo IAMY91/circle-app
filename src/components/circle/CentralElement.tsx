@@ -115,7 +115,46 @@ function CandleAnimation({ tensionLevel }: { tensionLevel: number }) {
   );
 }
 
+function AltarDisplay() {
+  return (
+    <motion.div
+      className="flex flex-col items-center justify-center select-none"
+      animate={{
+        boxShadow: [
+          '0 0 28px 8px rgba(212,168,83,0.2), inset 0 0 20px rgba(212,168,83,0.08)',
+          '0 0 42px 16px rgba(212,168,83,0.38), inset 0 0 30px rgba(212,168,83,0.16)',
+        ],
+      }}
+      transition={{ duration: 3, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
+      style={{
+        width: 140,
+        height: 140,
+        borderRadius: '50%',
+        border: '3px solid #d4a853',
+        background: 'radial-gradient(circle at center, #2d1f0f 0%, #0f0905 70%)',
+        flexDirection: 'column',
+        gap: 4,
+      }}
+    >
+      <div style={{ fontSize: 38, lineHeight: 1 }}>🌸</div>
+      <div
+        style={{
+          fontSize: 10,
+          color: '#d4a853',
+          letterSpacing: '0.15em',
+          textTransform: 'uppercase',
+          fontFamily: 'serif',
+          marginTop: 4,
+        }}
+      >
+        Sacred Space
+      </div>
+    </motion.div>
+  );
+}
+
 export default function CentralElement({ type, tensionLevel }: Props) {
+  const glowColor = type === 'altar' ? '212,168,83' : '255,100,20';
   const glowRadius = 20 + tensionLevel * 0.6;
   const glowSpread = 8 + tensionLevel * 0.25;
   const glowOpacity = 0.12 + tensionLevel * 0.004;
@@ -125,11 +164,10 @@ export default function CentralElement({ type, tensionLevel }: Props) {
       className="relative flex items-center justify-center"
       style={{ width: '100%', height: '100%' }}
     >
-      {/* Tension-driven ambient glow */}
       <motion.div
         className="absolute inset-0 rounded-full pointer-events-none"
         animate={{
-          boxShadow: `0 0 ${glowRadius}px ${glowSpread}px rgba(255,100,20,${glowOpacity})`,
+          boxShadow: `0 0 ${glowRadius}px ${glowSpread}px rgba(${glowColor},${glowOpacity})`,
         }}
         transition={{ duration: 1.5 }}
       />
@@ -144,8 +182,10 @@ export default function CentralElement({ type, tensionLevel }: Props) {
         >
           {type === 'fire' ? (
             <FireAnimation tensionLevel={tensionLevel} />
-          ) : (
+          ) : type === 'candle' ? (
             <CandleAnimation tensionLevel={tensionLevel} />
+          ) : (
+            <AltarDisplay />
           )}
         </motion.div>
       </AnimatePresence>

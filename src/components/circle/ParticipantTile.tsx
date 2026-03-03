@@ -7,42 +7,70 @@ interface Props {
   participant: Participant;
   isSpeaking: boolean;
   isLocal: boolean;
+  hasTalkingStick: boolean;
+  isPassingStickMode: boolean;
   size: number;
+  onClick?: () => void;
 }
 
-export default function ParticipantTile({ participant, isSpeaking, isLocal, size }: Props) {
-  const initials = participant.name
-    .split(' ')
-    .map(w => w[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-
+export default function ParticipantTile({
+  participant,
+  isSpeaking,
+  isLocal,
+  hasTalkingStick,
+  isPassingStickMode,
+  size,
+  onClick,
+}: Props) {
   const nameFontSize = size < 100 ? 'text-xs' : 'text-sm';
-  const initialsSize = size < 100 ? 'text-sm' : size < 130 ? 'text-lg' : 'text-xl';
+  const emojiSize = size < 100 ? 28 : size < 130 ? 36 : 44;
   const borderRadius = size * 0.18;
 
+  const shadow = hasTalkingStick
+    ? '0 0 0 3px #d4a853, 0 0 22px 8px rgba(212,168,83,0.5)'
+    : isSpeaking
+    ? '0 0 0 3px #58a6ff, 0 0 18px 6px rgba(88,166,255,0.35)'
+    : isLocal
+    ? '0 0 0 2px rgba(139,92,246,0.7)'
+    : '0 0 0 1px rgba(255,255,255,0.08)';
+
+  const canReceiveStick = isPassingStickMode && !isLocal;
+
   return (
-    <div className="relative flex flex-col items-center" style={{ width: size }}>
+    <div
+      className="relative flex flex-col items-center"
+      style={{ width: size, cursor: canReceiveStick ? 'cell' : 'default' }}
+      onClick={canReceiveStick ? onClick : undefined}
+    >
+      {/* Talking stick indicator — floats above tile */}
+      {hasTalkingStick && (
+        <div
+          className="absolute -top-5 text-center select-none"
+          style={{ fontSize: 16, lineHeight: 1, color: '#d4a853' }}
+          title="Holding the talking stick"
+        >
+          🪵
+        </div>
+      )}
+
       <motion.div
-        animate={{
-          boxShadow: isSpeaking
-            ? '0 0 0 3px #f59e0b, 0 0 18px 6px rgba(245,158,11,0.35)'
-            : isLocal
-            ? '0 0 0 2px rgba(139,92,246,0.7)'
-            : '0 0 0 1px rgba(255,255,255,0.08)',
-        }}
+        animate={{ boxShadow: shadow }}
         transition={{ duration: 0.3 }}
+        whileHover={canReceiveStick ? { scale: 1.06 } : {}}
         className={`relative bg-gradient-to-br ${participant.avatarColor} flex items-center justify-center overflow-hidden`}
         style={{ width: size, height: size, borderRadius }}
       >
-        {/* Avatar (mock video) */}
+        {/* Emoji avatar */}
         {participant.isVideoOff ? (
           <div className="absolute inset-0 bg-stone-800 flex items-center justify-center">
-            <span className={`${initialsSize} font-bold text-stone-400`}>{initials}</span>
+            <span style={{ fontSize: emojiSize * 0.7, lineHeight: 1 }} className="select-none">
+              {participant.emoji}
+            </span>
           </div>
         ) : (
-          <span className={`${initialsSize} font-bold text-white/80 select-none`}>{initials}</span>
+          <span style={{ fontSize: emojiSize, lineHeight: 1 }} className="select-none">
+            {participant.emoji}
+          </span>
         )}
 
         {/* Muted badge */}
@@ -77,11 +105,18 @@ export default function ParticipantTile({ participant, isSpeaking, isLocal, size
             ✋
           </div>
         )}
+
+        {/* Passing-stick target highlight */}
+        {canReceiveStick && (
+          <div className="absolute inset-0 rounded-[inherit] border-2 border-amber-400/60 pointer-events-none" />
+        )}
       </motion.div>
 
       {/* Name */}
       <div
-        className={`mt-1 ${nameFontSize} text-stone-300 font-medium truncate text-center`}
+        className={`mt-1 ${nameFontSize} font-medium truncate text-center ${
+          hasTalkingStick ? 'text-amber-300' : 'text-stone-300'
+        }`}
         style={{ maxWidth: size, paddingLeft: 4, paddingRight: 4 }}
       >
         {isLocal ? 'You' : participant.name}
