@@ -7,6 +7,7 @@ import Soundboard from './Soundboard';
 import TensionBarometer from './TensionBarometer';
 import VibeQuadrant from './VibeQuadrant';
 import MeditationLibrary from './MeditationLibrary';
+import SpotifyEmbed from './SpotifyEmbed';
 
 interface Props {
   isOpen: boolean;
@@ -160,31 +161,27 @@ export default function FacilitatorSidebar({
                 {/* Oracle Card */}
                 <button
                   onClick={onDrawOracleCard}
-                  className="col-span-2 bg-stone-800 hover:bg-stone-700 border border-stone-700 hover:border-amber-700 rounded-lg px-3 py-2.5 text-sm text-stone-200 flex items-center gap-2 transition-all"
+                  className="col-span-2 bg-stone-800 hover:bg-stone-700 border border-stone-700 rounded-lg px-3 py-2.5 text-sm text-stone-200 flex items-center gap-2 transition-all"
                 >
                   <span>🎴</span>
                   <span>Pull Oracle Card</span>
                 </button>
 
                 {/* Current theme indicator */}
-                <div className="bg-stone-800/60 rounded-lg px-3 py-2 flex items-center gap-1.5 border border-stone-700/50">
+                <div className="col-span-2 bg-stone-800/60 rounded-lg px-3 py-2 flex items-center gap-1.5 border border-stone-700/50">
                   <span className="text-base">🎨</span>
                   <div>
                     <div className="text-xs accent-text font-medium capitalize">{theme}</div>
-                    <div className="text-xs text-stone-700">skin via 🎨 below</div>
-                  </div>
-                </div>
-
-                {/* Music placeholder */}
-                <div className="bg-stone-900/60 rounded-lg px-3 py-2 flex items-center gap-1.5 border border-stone-800/60">
-                  <span className="text-base">🎵</span>
-                  <div>
-                    <div className="text-xs text-stone-500 font-medium">Spotify</div>
-                    <div className="text-xs text-stone-700">coming soon</div>
+                    <div className="text-xs text-stone-700">skin via 🎨 button below</div>
                   </div>
                 </div>
               </div>
             </div>
+
+            <hr className="border-stone-800" />
+
+            {/* ── Spotify ────────────────────────────────────── */}
+            <SpotifyEmbed />
 
             <hr className="border-stone-800" />
 

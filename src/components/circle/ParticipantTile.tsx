@@ -11,6 +11,8 @@ interface Props {
   isPassingStickMode: boolean;
   size: number;
   onClick?: () => void;
+  /** Live camera stream ref — only supplied for the local participant */
+  videoRef?: React.RefObject<HTMLVideoElement>;
 }
 
 export default function ParticipantTile({
@@ -21,6 +23,7 @@ export default function ParticipantTile({
   isPassingStickMode,
   size,
   onClick,
+  videoRef,
 }: Props) {
   const nameFontSize = size < 100 ? 'text-xs' : 'text-sm';
   const emojiSize = size < 100 ? 28 : size < 130 ? 36 : 44;
@@ -35,6 +38,8 @@ export default function ParticipantTile({
     : '0 0 0 1px rgba(255,255,255,0.08)';
 
   const canReceiveStick = isPassingStickMode && !isLocal;
+  // Show real camera when this is the local tile, a stream ref exists, and video is on
+  const showVideo = isLocal && videoRef && !participant.isVideoOff;
 
   return (
     <div
@@ -42,7 +47,7 @@ export default function ParticipantTile({
       style={{ width: size, cursor: canReceiveStick ? 'cell' : 'default' }}
       onClick={canReceiveStick ? onClick : undefined}
     >
-      {/* Talking stick indicator — floats above tile */}
+      {/* Talking stick indicator */}
       {hasTalkingStick && (
         <div
           className="absolute -top-5 text-center select-none"
@@ -60,17 +65,30 @@ export default function ParticipantTile({
         className={`relative bg-gradient-to-br ${participant.avatarColor} flex items-center justify-center overflow-hidden`}
         style={{ width: size, height: size, borderRadius }}
       >
-        {/* Emoji avatar */}
-        {participant.isVideoOff ? (
-          <div className="absolute inset-0 bg-stone-800 flex items-center justify-center">
-            <span style={{ fontSize: emojiSize * 0.7, lineHeight: 1 }} className="select-none">
+        {/* Live camera video (local participant only) */}
+        {showVideo && (
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
+
+        {/* Emoji avatar — shown when video is off or for remote participants */}
+        {!showVideo && (
+          participant.isVideoOff ? (
+            <div className="absolute inset-0 bg-stone-800 flex items-center justify-center">
+              <span style={{ fontSize: emojiSize * 0.7, lineHeight: 1 }} className="select-none">
+                {participant.emoji}
+              </span>
+            </div>
+          ) : (
+            <span style={{ fontSize: emojiSize, lineHeight: 1 }} className="select-none">
               {participant.emoji}
             </span>
-          </div>
-        ) : (
-          <span style={{ fontSize: emojiSize, lineHeight: 1 }} className="select-none">
-            {participant.emoji}
-          </span>
+          )
         )}
 
         {/* Muted badge */}

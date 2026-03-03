@@ -162,8 +162,15 @@ function reducer(state: CircleState, action: CircleAction): CircleState {
   }
 }
 
-export function useCircleState() {
-  const [state, dispatch] = useReducer(reducer, initialState);
+export function useCircleState(localName?: string, localEmoji?: string) {
+  const [state, dispatch] = useReducer(reducer, undefined, () => ({
+    ...initialState,
+    participants: initialState.participants.map(p =>
+      p.id === 'local'
+        ? { ...p, name: localName ?? p.name, emoji: localEmoji ?? p.emoji }
+        : p
+    ),
+  }));
 
   // Rotate the active speaker every 4s to simulate a live call
   useEffect(() => {

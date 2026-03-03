@@ -15,6 +15,7 @@ interface Props {
   talkingStickHolderId: string | null;
   isPassingStickMode: boolean;
   onTileClick: (participantId: string) => void;
+  localVideoRef?: React.RefObject<HTMLVideoElement>;
 }
 
 export default function CircleLayout({
@@ -26,6 +27,7 @@ export default function CircleLayout({
   talkingStickHolderId,
   isPassingStickMode,
   onTileClick,
+  localVideoRef,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState(600);
@@ -89,6 +91,7 @@ export default function CircleLayout({
               isPassingStickMode={isPassingStickMode}
               size={tileSize}
               onClick={() => onTileClick(participant.id)}
+              videoRef={participant.id === localParticipantId ? localVideoRef : undefined}
             />
           </div>
         );

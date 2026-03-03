@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from 'react';
 import { useCircleState } from '@/hooks/useCircleState';
+import { useLocalMedia } from '@/hooks/useLocalMedia';
 import { useTimer } from '@/hooks/useTimer';
 import { useAudio } from '@/hooks/useAudio';
 import { ChatMessage, Mood } from '@/types';
@@ -11,7 +12,19 @@ import FacilitatorSidebar from '@/components/facilitator/FacilitatorSidebar';
 import ChatDrawer from '@/components/chat/ChatDrawer';
 import OracleCardModal from '@/components/oracle/OracleCardModal';
 
-export default function CircleRoom() {
+interface Props {
+  localName?: string;
+  localEmoji?: string;
+  initialMuted?: boolean;
+  initialVideoOff?: boolean;
+}
+
+export default function CircleRoom({
+  localName,
+  localEmoji,
+  initialMuted = false,
+  initialVideoOff = false,
+}: Props) {
   const {
     state,
     dispatch,
@@ -21,7 +34,9 @@ export default function CircleRoom() {
     vibeX,
     vibeY,
     drawOracleCard,
-  } = useCircleState();
+  } = useCircleState(localName, localEmoji);
+
+  const localMedia = useLocalMedia(initialMuted, initialVideoOff);
   const { start, pause, reset } = useTimer(dispatch, state.timerRunning);
   const { play } = useAudio();
 
@@ -36,6 +51,34 @@ export default function CircleRoom() {
     prevTimerRef.current = state.timerSeconds;
   }, [state.timerSeconds]);
 
+  // Keep CircleState in sync with real media track state
+  useEffect(() => {
+    const currentlyMuted = !state.participants.find(p => p.id === state.localParticipantId)?.isMuted;
+    if (localMedia.isMuted !== currentlyMuted) {
+      dispatch({ type: 'TOGGLE_MUTE', participantId: state.localParticipantId });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localMedia.isMuted]);
+
+  useEffect(() => {
+    const currentlyOff = !state.participants.find(p => p.id === state.localParticipantId)?.isVideoOff;
+    if (localMedia.isVideoOff !== currentlyOff) {
+      dispatch({ type: 'TOGGLE_VIDEO', participantId: state.localParticipantId });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localMedia.isVideoOff]);
+
+  // Toggle handlers: drive real tracks AND keep UI state in sync
+  const handleToggleMute = () => {
+    localMedia.toggleMute();
+    dispatch({ type: 'TOGGLE_MUTE', participantId: state.localParticipantId });
+  };
+
+  const handleToggleVideo = () => {
+    localMedia.toggleVideo();
+    dispatch({ type: 'TOGGLE_VIDEO', participantId: state.localParticipantId });
+  };
+
   const handleTileClick = (participantId: string) => {
     if (state.isPassingStickMode) {
       dispatch({ type: 'SET_TALKING_STICK', participantId });
@@ -48,7 +91,7 @@ export default function CircleRoom() {
       style={{ background: '#080a10' }}
       data-theme={state.theme}
     >
-      {/* Breathing background pulse — color follows CSS var(--accent-glow) via theme */}
+      {/* Breathing background pulse */}
       <div
         className="breath-bg absolute pointer-events-none"
         style={{ width: '200%', height: '200%', top: '-50%', left: '-50%', zIndex: 0 }}
@@ -62,9 +105,19 @@ export default function CircleRoom() {
         />
       )}
 
+      {/* Camera / mic permission error banner */}
+      {localMedia.hasPermission === false && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-stone-800/95 border border-stone-700 text-stone-300 text-xs px-4 py-2 rounded-full shadow-lg backdrop-blur-sm pointer-events-none select-none">
+          🎤 {localMedia.permissionError ?? 'Camera/mic access denied — check browser permissions'}
+        </div>
+      )}
+
       {/* Passing-stick mode hint banner */}
       {state.isPassingStickMode && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-amber-600/90 text-white text-sm px-4 py-2 rounded-full shadow-lg backdrop-blur-sm pointer-events-none select-none">
+        <div
+          className="absolute top-4 left-1/2 -translate-x-1/2 z-20 text-white text-sm px-4 py-2 rounded-full shadow-lg backdrop-blur-sm pointer-events-none select-none"
+          style={{ backgroundColor: 'var(--accent-primary)', color: '#0c0a09' }}
+        >
           🪵 Click a participant to pass the talking stick
         </div>
       )}
@@ -90,6 +143,7 @@ export default function CircleRoom() {
             talkingStickHolderId={state.talkingStickHolderId}
             isPassingStickMode={state.isPassingStickMode}
             onTileClick={handleTileClick}
+            localVideoRef={localMedia.videoRef}
           />
         </div>
       </div>
@@ -101,15 +155,9 @@ export default function CircleRoom() {
           isChatOpen={state.isChatOpen}
           isSidebarOpen={state.isSidebarOpen}
           theme={state.theme}
-          onToggleMute={() =>
-            dispatch({ type: 'TOGGLE_MUTE', participantId: state.localParticipantId })
-          }
-          onToggleVideo={() =>
-            dispatch({ type: 'TOGGLE_VIDEO', participantId: state.localParticipantId })
-          }
-          onToggleHand={() =>
-            dispatch({ type: 'TOGGLE_HAND', participantId: state.localParticipantId })
-          }
+          onToggleMute={handleToggleMute}
+          onToggleVideo={handleToggleVideo}
+          onToggleHand={() => dispatch({ type: 'TOGGLE_HAND', participantId: state.localParticipantId })}
           onToggleChat={() => dispatch({ type: 'TOGGLE_CHAT' })}
           onToggleSidebar={() => dispatch({ type: 'TOGGLE_SIDEBAR' })}
           onSetMood={(mood: Mood | null) =>
