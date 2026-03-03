@@ -132,7 +132,7 @@ export default function ChatDrawer({ isOpen, messages, localName, onSend, onReac
                 <div key={msg.id} className={`group ${isOwn ? 'text-right' : ''}`}>
                   {/* Name + time */}
                   <div className={`flex items-baseline gap-2 mb-0.5 ${isOwn ? 'justify-end' : ''}`}>
-                    <span className="text-xs font-semibold text-amber-400">{msg.name}</span>
+                    <span className="text-xs font-semibold accent-text">{msg.name}</span>
                     <span className="text-xs text-stone-600">{formatTime(msg.timestamp)}</span>
                   </div>
 
@@ -140,9 +140,8 @@ export default function ChatDrawer({ isOpen, messages, localName, onSend, onReac
                   <div className={`relative inline-flex flex-col items-${isOwn ? 'end' : 'start'} max-w-[90%]`}>
                     <div className="relative">
                       <div
-                        className={`text-sm text-stone-100 rounded-xl px-3 py-2 inline-block text-left leading-relaxed ${
-                          isOwn ? 'bg-amber-700/70' : 'bg-stone-800'
-                        }`}
+                        className="text-sm text-stone-100 rounded-xl px-3 py-2 inline-block text-left leading-relaxed"
+                        style={isOwn ? { backgroundColor: 'var(--accent-dark)' } : { backgroundColor: 'rgb(41 37 36)' /* stone-800 */ }}
                       >
                         {parseMarkdown(msg.text)}
                       </div>
@@ -236,10 +235,9 @@ export default function ChatDrawer({ isOpen, messages, localName, onSend, onReac
             <button
               onClick={e => { e.stopPropagation(); setShowEmojiInput(v => !v); }}
               className={`w-9 h-9 flex-shrink-0 rounded-xl flex items-center justify-center text-lg transition-colors ${
-                showEmojiInput
-                  ? 'bg-amber-700 text-white'
-                  : 'bg-stone-800 text-stone-400 hover:text-stone-200 hover:bg-stone-700'
+                showEmojiInput ? 'text-white' : 'bg-stone-800 text-stone-400 hover:text-stone-200 hover:bg-stone-700'
               }`}
+              style={showEmojiInput ? { backgroundColor: 'var(--accent-primary)' } : {}}
               title="Emoji"
             >
               😊
@@ -254,12 +252,13 @@ export default function ChatDrawer({ isOpen, messages, localName, onSend, onReac
                 if (e.key === 'Escape') { setShowEmojiInput(false); setPickerOpenId(null); }
               }}
               placeholder="Message the circle… (*bold*, `code`)"
-              className="flex-1 bg-stone-800 rounded-xl px-3 py-2 text-sm text-stone-200 placeholder-stone-600 outline-none focus:ring-1 focus:ring-amber-500/50 min-w-0"
+              className="flex-1 bg-stone-800 rounded-xl px-3 py-2 text-sm text-stone-200 placeholder-stone-600 outline-none accent-ring-focus min-w-0"
             />
             <button
               onClick={send}
               disabled={!input.trim()}
-              className="bg-amber-600 hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl px-3 py-2 text-sm font-medium transition-colors flex-shrink-0"
+              className="disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl px-3 py-2 text-sm font-medium transition-colors flex-shrink-0"
+            style={{ backgroundColor: 'var(--accent-primary)' }}
             >
               Send
             </button>

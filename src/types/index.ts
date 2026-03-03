@@ -1,6 +1,6 @@
 export type Mood = '😌' | '😢' | '😤' | '🤩' | '😰' | '😊' | '😔' | '🔥';
 export type CentralElement = 'fire' | 'candle' | 'altar';
-export type Theme = 'earth' | 'water';
+export type Theme = 'earth' | 'water' | 'forest' | 'dusk' | 'rose' | 'midnight';
 
 export interface OracleCard {
   icon: string;

@@ -4,11 +4,55 @@
 
 /* ── Theme CSS variables ─────────────────────────────────────── */
 :root {
-  --accent-glow: 255, 157, 0;   /* orange — earth */
-  --breath-speed: 6s;
+  /* Earth (default) */
+  --accent-glow:      255, 157, 0;
+  --accent-primary:   #f59e0b;
+  --accent-secondary: #fbbf24;
+  --accent-dark:      rgba(120, 53, 15, 0.70);
+  --accent-ring:      rgba(245, 158, 11, 0.40);
+  --breath-speed:     6s;
 }
 [data-theme='water'] {
-  --accent-glow: 0, 212, 255;   /* cyan   — water */
+  --accent-glow:      0, 212, 255;
+  --accent-primary:   #06b6d4;
+  --accent-secondary: #22d3ee;
+  --accent-dark:      rgba(8, 51, 68, 0.70);
+  --accent-ring:      rgba(6, 182, 212, 0.40);
+}
+[data-theme='forest'] {
+  --accent-glow:      34, 197, 94;
+  --accent-primary:   #22c55e;
+  --accent-secondary: #4ade80;
+  --accent-dark:      rgba(5, 46, 22, 0.70);
+  --accent-ring:      rgba(34, 197, 94, 0.40);
+}
+[data-theme='dusk'] {
+  --accent-glow:      168, 85, 247;
+  --accent-primary:   #a855f7;
+  --accent-secondary: #c084fc;
+  --accent-dark:      rgba(59, 7, 100, 0.70);
+  --accent-ring:      rgba(168, 85, 247, 0.40);
+}
+[data-theme='rose'] {
+  --accent-glow:      236, 72, 153;
+  --accent-primary:   #ec4899;
+  --accent-secondary: #f472b6;
+  --accent-dark:      rgba(80, 7, 36, 0.70);
+  --accent-ring:      rgba(236, 72, 153, 0.40);
+}
+[data-theme='midnight'] {
+  --accent-glow:      99, 102, 241;
+  --accent-primary:   #818cf8;
+  --accent-secondary: #a5b4fc;
+  --accent-dark:      rgba(30, 27, 75, 0.70);
+  --accent-ring:      rgba(129, 140, 248, 0.40);
+}
+
+/* ── Accent utility classes (theme-aware) ─────────────────────── */
+.accent-text  { color: var(--accent-primary); }
+.accent-ring-focus:focus {
+  outline: none;
+  box-shadow: 0 0 0 1.5px var(--accent-ring);
 }
 
 /* ── Breathing background pulse ──────────────────────────────── */
@@ -35,7 +79,7 @@
     transform-origin: center bottom;
   }
 
-  /* Range input styling */
+  /* Range input styling — thumb follows theme accent */
   input[type='range'] {
     -webkit-appearance: none;
     appearance: none;
@@ -46,14 +90,14 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: #f59e0b;
+    background: var(--accent-primary);
     cursor: pointer;
   }
   input[type='range']::-moz-range-thumb {
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: #f59e0b;
+    background: var(--accent-primary);
     cursor: pointer;
     border: none;
   }

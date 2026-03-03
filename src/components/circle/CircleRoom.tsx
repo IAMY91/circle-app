@@ -100,6 +100,7 @@ export default function CircleRoom() {
           localParticipant={localParticipant}
           isChatOpen={state.isChatOpen}
           isSidebarOpen={state.isSidebarOpen}
+          theme={state.theme}
           onToggleMute={() =>
             dispatch({ type: 'TOGGLE_MUTE', participantId: state.localParticipantId })
           }
@@ -117,6 +118,7 @@ export default function CircleRoom() {
           onSetTension={(value: number) =>
             dispatch({ type: 'SET_TENSION', participantId: state.localParticipantId, value })
           }
+          onSetTheme={t => dispatch({ type: 'SET_THEME', theme: t })}
         />
       </div>
 
@@ -138,7 +140,6 @@ export default function CircleRoom() {
         onPauseTimer={pause}
         onResetTimer={reset}
         onLowerHand={id => dispatch({ type: 'TOGGLE_HAND', participantId: id })}
-        onSetTheme={t => dispatch({ type: 'SET_THEME', theme: t })}
         onToggleSeal={() => dispatch({ type: 'TOGGLE_SEAL' })}
         onPassStick={() =>
           dispatch({ type: 'SET_PASSING_STICK_MODE', active: !state.isPassingStickMode })

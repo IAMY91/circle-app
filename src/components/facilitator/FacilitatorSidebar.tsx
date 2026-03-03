@@ -25,7 +25,6 @@ interface Props {
   onPauseTimer: () => void;
   onResetTimer: () => void;
   onLowerHand: (id: string) => void;
-  onSetTheme: (t: Theme) => void;
   onToggleSeal: () => void;
   onPassStick: () => void;
   onDrawOracleCard: () => void;
@@ -48,7 +47,6 @@ export default function FacilitatorSidebar({
   onPauseTimer,
   onResetTimer,
   onLowerHand,
-  onSetTheme,
   onToggleSeal,
   onPassStick,
   onDrawOracleCard,
@@ -72,7 +70,10 @@ export default function FacilitatorSidebar({
               <div className="text-xs text-stone-600 mt-0.5">Visible only to you</div>
             </div>
             {isCircleSealed && (
-              <div className="flex items-center gap-1 text-xs text-amber-400 bg-amber-900/30 px-2 py-1 rounded-full border border-amber-700/50">
+              <div
+                className="flex items-center gap-1 text-xs px-2 py-1 rounded-full border accent-text"
+                style={{ backgroundColor: 'rgba(var(--accent-glow), 0.15)', borderColor: 'rgba(var(--accent-glow), 0.35)' }}
+              >
                 🔒 Sealed
               </div>
             )}
@@ -89,9 +90,13 @@ export default function FacilitatorSidebar({
                   onClick={onPassStick}
                   className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
                     isPassingStickMode
-                      ? 'bg-amber-500 text-stone-900 shadow-lg shadow-amber-900/40'
-                      : 'bg-amber-800/60 hover:bg-amber-700/60 text-amber-200 border border-amber-700/50'
+                      ? 'text-stone-900 shadow-lg'
+                      : 'hover:opacity-80 text-stone-200 border border-stone-600'
                   }`}
+                  style={isPassingStickMode
+                    ? { backgroundColor: 'var(--accent-primary)' }
+                    : { backgroundColor: 'rgba(var(--accent-glow), 0.15)', borderColor: 'rgba(var(--accent-glow), 0.3)' }
+                  }
                 >
                   🪵 {isPassingStickMode ? 'Click a participant…' : 'Pass Talking Stick'}
                 </button>
@@ -112,9 +117,10 @@ export default function FacilitatorSidebar({
                       onClick={() => onSetCentralElement(el)}
                       className={`flex-1 py-2 rounded-lg text-sm capitalize transition-colors flex items-center justify-center gap-1 ${
                         centralElement === el
-                          ? 'bg-amber-600 text-white'
+                          ? 'text-white'
                           : 'bg-stone-700 hover:bg-stone-600 text-stone-300'
                       }`}
+                      style={centralElement === el ? { backgroundColor: 'var(--accent-primary)' } : {}}
                     >
                       <span>{icons[el]}</span>
                       <span className="text-xs">{el}</span>
@@ -160,16 +166,14 @@ export default function FacilitatorSidebar({
                   <span>Pull Oracle Card</span>
                 </button>
 
-                {/* Theme toggle */}
-                <button
-                  onClick={() => onSetTheme(theme === 'earth' ? 'water' : 'earth')}
-                  className={`bg-stone-700 hover:bg-stone-600 rounded-lg px-3 py-2 text-sm flex items-center gap-1.5 transition-colors ${
-                    theme === 'water' ? 'text-cyan-300' : 'text-stone-200'
-                  }`}
-                >
-                  <span>{theme === 'water' ? '🔥' : '💧'}</span>
-                  <span>{theme === 'water' ? 'Earth' : 'Water'}</span>
-                </button>
+                {/* Current theme indicator */}
+                <div className="bg-stone-800/60 rounded-lg px-3 py-2 flex items-center gap-1.5 border border-stone-700/50">
+                  <span className="text-base">🎨</span>
+                  <div>
+                    <div className="text-xs accent-text font-medium capitalize">{theme}</div>
+                    <div className="text-xs text-stone-700">skin via 🎨 below</div>
+                  </div>
+                </div>
 
                 {/* Music placeholder */}
                 <div className="bg-stone-900/60 rounded-lg px-3 py-2 flex items-center gap-1.5 border border-stone-800/60">

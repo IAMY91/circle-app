@@ -33,13 +33,13 @@ export default function TimerPanel({ timerSeconds, timerRunning, onStart, onPaus
   const progress = totalSeconds > 0 ? timerSeconds / totalSeconds : 0;
   const dashOffset = CIRCUMFERENCE * (1 - progress);
 
-  const ringColor = hasEnded ? '#ef4444' : timerRunning ? '#f59e0b' : '#78716c';
+  const ringColor = hasEnded ? '#ef4444' : timerRunning ? 'var(--accent-primary)' : '#78716c';
   const textColor = hasEnded
     ? 'text-red-400'
     : neverStarted
     ? 'text-stone-600'
     : timerRunning
-    ? 'text-amber-400'
+    ? 'accent-text'
     : 'text-stone-200';
 
   const startFresh = (s: number) => {
@@ -136,7 +136,7 @@ export default function TimerPanel({ timerSeconds, timerRunning, onStart, onPaus
           max="999"
           onChange={e => setCustomMin(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleCustom()}
-          className="flex-1 bg-stone-700 rounded-lg text-sm text-stone-200 px-2 py-1.5 outline-none text-center focus:ring-1 focus:ring-amber-500/50 min-w-0"
+          className="flex-1 bg-stone-700 rounded-lg text-sm text-stone-200 px-2 py-1.5 outline-none text-center accent-ring-focus min-w-0"
         />
         <button
           onClick={handleCustom}
@@ -151,7 +151,8 @@ export default function TimerPanel({ timerSeconds, timerRunning, onStart, onPaus
         {timerRunning ? (
           <button
             onClick={onPause}
-            className="flex-1 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-sm font-medium transition-colors"
+            className="flex-1 py-2 text-white rounded-lg text-sm font-medium transition-colors"
+            style={{ backgroundColor: 'var(--accent-primary)' }}
           >
             Pause
           </button>
