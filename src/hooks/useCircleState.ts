@@ -42,28 +42,44 @@ export const ORACLE_DECK: OracleCard[] = [
   { icon: '🌿', title: 'Renewal', text: '"Growth happens in the spaces between words."' },
 ];
 
-// Maps mood emoji to pleasantness score (-100 to +100)
 const MOOD_SENTIMENT: Record<string, number> = {
-  '😊': 70, '🤩': 60, '🔥': 50, '😌': 60,
-  '😢': -60, '😔': -40, '😤': -70, '😰': -50,
+  '😊': 70,
+  '🤩': 60,
+  '🔥': 50,
+  '😌': 60,
+  '😢': -60,
+  '😔': -40,
+  '😤': -70,
+  '😰': -50,
 };
 
-const initialState: CircleState = {
-  participants: MOCK_PARTICIPANTS,
-  localParticipantId: 'local',
-  activeSpeakerId: null,
-  centralElement: 'fire',
-  chatMessages: INITIAL_MESSAGES,
-  isChatOpen: false,
-  isSidebarOpen: false,
-  timerSeconds: 0,
-  timerRunning: false,
-  talkingStickHolderId: 'local',
-  isPassingStickMode: false,
-  theme: 'earth',
-  oracleCard: null,
-  isCircleSealed: false,
-};
+function buildInitialState(localName: string, startMuted: boolean, startVideoOff: boolean): CircleState {
+  return {
+    participants: MOCK_PARTICIPANTS.map(p =>
+      p.id === 'local'
+        ? {
+            ...p,
+            name: localName || p.name,
+            isMuted: startMuted,
+            isVideoOff: startVideoOff,
+          }
+        : p
+    ),
+    localParticipantId: 'local',
+    activeSpeakerId: null,
+    centralElement: 'fire',
+    chatMessages: INITIAL_MESSAGES,
+    isChatOpen: false,
+    isSidebarOpen: false,
+    timerSeconds: 0,
+    timerRunning: false,
+    talkingStickHolderId: 'local',
+    isPassingStickMode: false,
+    theme: 'earth',
+    oracleCard: null,
+    isCircleSealed: false,
+  };
+}
 
 function reducer(state: CircleState, action: CircleAction): CircleState {
   switch (action.type) {
@@ -162,25 +178,25 @@ function reducer(state: CircleState, action: CircleAction): CircleState {
   }
 }
 
-export function useCircleState() {
-  const [state, dispatch] = useReducer(reducer, initialState);
+export function useCircleState(localName: string, startMuted: boolean, startVideoOff: boolean) {
+  const [state, dispatch] = useReducer(reducer, undefined, () =>
+    buildInitialState(localName, startMuted, startVideoOff)
+  );
 
-  // Rotate the active speaker every 4s to simulate a live call
   useEffect(() => {
-    const ids = MOCK_PARTICIPANTS.map(p => p.id);
+    const ids = state.participants.map(p => p.id);
     let i = 0;
     const interval = setInterval(() => {
       i = (i + 1) % ids.length;
       dispatch({ type: 'SET_ACTIVE_SPEAKER', id: ids[i] });
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [state.participants]);
 
   const avgTension = useMemo(
     () =>
       Math.round(
-        state.participants.reduce((sum, p) => sum + p.tensionInput, 0) /
-          state.participants.length
+        state.participants.reduce((sum, p) => sum + p.tensionInput, 0) / state.participants.length
       ),
     [state.participants]
   );
@@ -192,7 +208,6 @@ export function useCircleState() {
 
   const localParticipant = state.participants.find(p => p.id === state.localParticipantId)!;
 
-  // Vibe X = pleasantness from moods, Y = energy from tension
   const vibeX = useMemo(
     () =>
       state.participants.reduce((sum, p) => sum + (MOOD_SENTIMENT[p.mood ?? ''] ?? 0), 0) /

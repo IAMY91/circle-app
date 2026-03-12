@@ -42,7 +42,7 @@ export default function MoodSelector({ currentMood, onSelect }: Props) {
         {currentMood ?? '🙂'}
       </button>
       {open && (
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-stone-800 border border-stone-700 rounded-xl p-2 grid grid-cols-4 gap-1 shadow-2xl z-50">
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 bg-stone-800 border border-stone-700 rounded-xl p-2 flex gap-1 shadow-2xl z-50 whitespace-nowrap">
           {MOODS.map(({ emoji, label }) => (
             <button
               key={emoji}
