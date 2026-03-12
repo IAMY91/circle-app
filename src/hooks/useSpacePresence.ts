@@ -27,13 +27,7 @@ function hash(input: string) {
   return Math.abs(h);
 }
 
-function buildParticipant(
-  id: string,
-  name: string,
-  isMuted: boolean,
-  isVideoOff: boolean,
-  isFacilitator = false
-): Participant {
+function buildParticipant(id: string, name: string, isMuted: boolean, isVideoOff: boolean, isFacilitator = false): Participant {
   const seed = hash(name || id);
   return {
     id,
