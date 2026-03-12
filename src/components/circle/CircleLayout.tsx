@@ -15,6 +15,7 @@ interface Props {
   talkingStickHolderId: string | null;
   isPassingStickMode: boolean;
   onTileClick: (participantId: string) => void;
+  localStream?: MediaStream | null;
 }
 
 export default function CircleLayout({
@@ -26,6 +27,7 @@ export default function CircleLayout({
   talkingStickHolderId,
   isPassingStickMode,
   onTileClick,
+  localStream,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState(600);
@@ -88,6 +90,7 @@ export default function CircleLayout({
               hasTalkingStick={talkingStickHolderId === participant.id}
               isPassingStickMode={isPassingStickMode}
               size={tileSize}
+              localStream={participant.id === localParticipantId ? localStream : null}
               onClick={() => onTileClick(participant.id)}
             />
           </div>
