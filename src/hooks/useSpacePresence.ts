@@ -27,7 +27,13 @@ function hash(input: string) {
   return Math.abs(h);
 }
 
-function buildParticipant(id: string, name: string, isMuted: boolean, isVideoOff: boolean): Participant {
+function buildParticipant(
+  id: string,
+  name: string,
+  isMuted: boolean,
+  isVideoOff: boolean,
+  isFacilitator = false
+): Participant {
   const seed = hash(name || id);
   return {
     id,
@@ -39,7 +45,7 @@ function buildParticipant(id: string, name: string, isMuted: boolean, isVideoOff
     handRaised: false,
     mood: null,
     tensionInput: 30,
-    isFacilitator: false,
+    isFacilitator,
   };
 }
 
@@ -47,7 +53,7 @@ export function useSpacePresence(spaceId: string, name: string, initialMuted: bo
   const localId = useRef(`u-${crypto.randomUUID()}`);
   const channelRef = useRef<BroadcastChannel | null>(null);
   const [localParticipant, setLocalParticipant] = useState<Participant>(() =>
-    buildParticipant(localId.current, name, initialMuted, initialVideoOff)
+    buildParticipant(localId.current, name, initialMuted, initialVideoOff, true)
   );
   const [remoteParticipants, setRemoteParticipants] = useState<Record<string, Participant>>({});
   const lastSeenRef = useRef<Record<string, number>>({});

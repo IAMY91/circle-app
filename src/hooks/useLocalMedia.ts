@@ -8,10 +8,24 @@ export function useLocalMedia(initialAudioEnabled = true, initialVideoEnabled = 
   const [isVideoEnabled, setIsVideoEnabled] = useState(initialVideoEnabled);
   const [error, setError] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const isAudioEnabledRef = useRef(initialAudioEnabled);
+  const isVideoEnabledRef = useRef(initialVideoEnabled);
+
+  useEffect(() => {
+    isAudioEnabledRef.current = isAudioEnabled;
+  }, [isAudioEnabled]);
+
+  useEffect(() => {
+    isVideoEnabledRef.current = isVideoEnabled;
+  }, [isVideoEnabled]);
 
   const requestPermissions = useCallback(async () => {
+    if (streamRef.current) {
+      return streamRef.current;
+    }
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      const localStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
         video: {
           width: { ideal: 1280 },
@@ -19,22 +33,22 @@ export function useLocalMedia(initialAudioEnabled = true, initialVideoEnabled = 
           facingMode: 'user',
         },
       });
-      streamRef.current = stream;
-      setStream(stream);
-      stream.getAudioTracks().forEach(track => {
-        track.enabled = isAudioEnabled;
+      streamRef.current = localStream;
+      setStream(localStream);
+      localStream.getAudioTracks().forEach(track => {
+        track.enabled = isAudioEnabledRef.current;
       });
-      stream.getVideoTracks().forEach(track => {
-        track.enabled = isVideoEnabled;
+      localStream.getVideoTracks().forEach(track => {
+        track.enabled = isVideoEnabledRef.current;
       });
       setError(null);
-      return stream;
+      return localStream;
     } catch (err) {
       console.error(err);
       setError('Could not access camera or microphone. Please allow permissions and retry.');
       return null;
     }
-  }, [isAudioEnabled, isVideoEnabled]);
+  }, []);
 
   const stopAll = useCallback(() => {
     streamRef.current?.getTracks().forEach(track => track.stop());
