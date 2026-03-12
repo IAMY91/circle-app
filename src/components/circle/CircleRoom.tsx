@@ -51,7 +51,9 @@ export default function CircleRoom({
 
   useEffect(() => {
     media.requestPermissions();
-  }, [media]);
+    // Request once on room mount to avoid restarting stream (camera flicker).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (prevTimerRef.current > 0 && state.timerSeconds === 0) {
@@ -140,11 +142,20 @@ export default function CircleRoom({
             presence.patchLocalParticipant({ isVideoOff: !localParticipant.isVideoOff });
             media.toggleVideo();
           }}
-          onToggleHand={() => dispatch({ type: 'TOGGLE_HAND', participantId: state.localParticipantId })}
+          onToggleHand={() => {
+            dispatch({ type: 'TOGGLE_HAND', participantId: state.localParticipantId });
+            presence.patchLocalParticipant({ handRaised: !localParticipant.handRaised });
+          }}
           onToggleChat={() => dispatch({ type: 'TOGGLE_CHAT' })}
           onToggleSidebar={() => dispatch({ type: 'TOGGLE_SIDEBAR' })}
-          onSetMood={(mood: Mood | null) => dispatch({ type: 'SET_MOOD', participantId: state.localParticipantId, mood })}
-          onSetTension={(value: number) => dispatch({ type: 'SET_TENSION', participantId: state.localParticipantId, value })}
+          onSetMood={(mood: Mood | null) => {
+            dispatch({ type: 'SET_MOOD', participantId: state.localParticipantId, mood });
+            presence.patchLocalParticipant({ mood });
+          }}
+          onSetTension={(value: number) => {
+            dispatch({ type: 'SET_TENSION', participantId: state.localParticipantId, value });
+            presence.patchLocalParticipant({ tensionInput: value });
+          }}
           onSetTheme={t => dispatch({ type: 'SET_THEME', theme: t })}
         />
       </div>

@@ -63,12 +63,27 @@ function buildInitialState(
 
 function reducer(state: CircleState, action: CircleAction): CircleState {
   switch (action.type) {
-    case 'SET_PARTICIPANTS':
+    case 'SET_PARTICIPANTS': {
+      const previousById = new Map(state.participants.map(p => [p.id, p]));
+      const mergedParticipants = action.participants.map(participant => {
+        const existing = previousById.get(participant.id);
+        if (!existing) return participant;
+        return {
+          ...participant,
+          handRaised: existing.handRaised,
+          mood: existing.mood,
+          tensionInput: existing.tensionInput,
+        };
+      });
       return {
         ...state,
-        participants: action.participants,
-        activeSpeakerId: action.participants[0]?.id ?? null,
+        participants: mergedParticipants,
+        activeSpeakerId:
+          state.activeSpeakerId && mergedParticipants.some(p => p.id === state.activeSpeakerId)
+            ? state.activeSpeakerId
+            : mergedParticipants[0]?.id ?? null,
       };
+    }
     case 'SET_MOOD':
       return {
         ...state,
