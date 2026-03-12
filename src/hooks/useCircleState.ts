@@ -1,8 +1,7 @@
 'use client';
 
-import { useReducer, useEffect, useMemo } from 'react';
-import { CircleState, CircleAction, ChatMessage, OracleCard } from '@/types';
-import { MOCK_PARTICIPANTS } from '@/lib/mockParticipants';
+import { useReducer, useMemo } from 'react';
+import { CircleState, CircleAction, ChatMessage, OracleCard, Participant, Theme, CentralElement } from '@/types';
 
 const now = Date.now();
 const INITIAL_MESSAGES: ChatMessage[] = [
@@ -11,23 +10,8 @@ const INITIAL_MESSAGES: ChatMessage[] = [
     participantId: 'system',
     name: 'Circle Guide',
     text: 'Welcome. Take a breath and arrive fully. 🌿',
-    timestamp: now - 8 * 60 * 1000,
-    reactions: { '🙏': 3, '💛': 2 },
-  },
-  {
-    id: 'msg-1',
-    participantId: 'p2',
-    name: 'Luna',
-    text: 'Grateful to hold this space with you all.',
-    timestamp: now - 5 * 60 * 1000,
-    reactions: { '💛': 4 },
-  },
-  {
-    id: 'msg-2',
-    participantId: 'p3',
-    name: 'Aria',
-    text: 'Holding with **love** and *presence*.',
     timestamp: now - 2 * 60 * 1000,
+    reactions: { '🙏': 1 },
   },
 ];
 
@@ -53,29 +37,25 @@ const MOOD_SENTIMENT: Record<string, number> = {
   '😰': -50,
 };
 
-function buildInitialState(localName: string, startMuted: boolean, startVideoOff: boolean): CircleState {
+function buildInitialState(
+  participants: Participant[],
+  localParticipantId: string,
+  initialTheme: Theme,
+  initialCentralElement: CentralElement
+): CircleState {
   return {
-    participants: MOCK_PARTICIPANTS.map(p =>
-      p.id === 'local'
-        ? {
-            ...p,
-            name: localName || p.name,
-            isMuted: startMuted,
-            isVideoOff: startVideoOff,
-          }
-        : p
-    ),
-    localParticipantId: 'local',
-    activeSpeakerId: null,
-    centralElement: 'fire',
+    participants,
+    localParticipantId,
+    activeSpeakerId: localParticipantId,
+    centralElement: initialCentralElement,
     chatMessages: INITIAL_MESSAGES,
     isChatOpen: false,
     isSidebarOpen: false,
     timerSeconds: 0,
     timerRunning: false,
-    talkingStickHolderId: 'local',
+    talkingStickHolderId: localParticipantId,
     isPassingStickMode: false,
-    theme: 'earth',
+    theme: initialTheme,
     oracleCard: null,
     isCircleSealed: false,
   };
@@ -83,6 +63,12 @@ function buildInitialState(localName: string, startMuted: boolean, startVideoOff
 
 function reducer(state: CircleState, action: CircleAction): CircleState {
   switch (action.type) {
+    case 'SET_PARTICIPANTS':
+      return {
+        ...state,
+        participants: action.participants,
+        activeSpeakerId: action.participants[0]?.id ?? null,
+      };
     case 'SET_MOOD':
       return {
         ...state,
@@ -142,11 +128,6 @@ function reducer(state: CircleState, action: CircleAction): CircleState {
         ...state,
         talkingStickHolderId: action.participantId,
         isPassingStickMode: false,
-        participants: action.participantId
-          ? state.participants.map(p =>
-              p.id === action.participantId ? { ...p, handRaised: false } : p
-            )
-          : state.participants,
       };
     case 'SET_PASSING_STICK_MODE':
       return { ...state, isPassingStickMode: action.active };
@@ -178,26 +159,25 @@ function reducer(state: CircleState, action: CircleAction): CircleState {
   }
 }
 
-export function useCircleState(localName: string, startMuted: boolean, startVideoOff: boolean) {
-  const [state, dispatch] = useReducer(reducer, undefined, () =>
-    buildInitialState(localName, startMuted, startVideoOff)
+export function useCircleState(
+  participants: Participant[],
+  localParticipantId: string,
+  initialTheme: Theme,
+  initialCentralElement: CentralElement
+) {
+  const [state, dispatch] = useReducer(
+    reducer,
+    undefined,
+    () => buildInitialState(participants, localParticipantId, initialTheme, initialCentralElement)
   );
-
-  useEffect(() => {
-    const ids = state.participants.map(p => p.id);
-    let i = 0;
-    const interval = setInterval(() => {
-      i = (i + 1) % ids.length;
-      dispatch({ type: 'SET_ACTIVE_SPEAKER', id: ids[i] });
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [state.participants]);
 
   const avgTension = useMemo(
     () =>
-      Math.round(
-        state.participants.reduce((sum, p) => sum + p.tensionInput, 0) / state.participants.length
-      ),
+      state.participants.length
+        ? Math.round(
+            state.participants.reduce((sum, p) => sum + p.tensionInput, 0) / state.participants.length
+          )
+        : 0,
     [state.participants]
   );
 
@@ -206,18 +186,22 @@ export function useCircleState(localName: string, startMuted: boolean, startVide
     [state.participants]
   );
 
-  const localParticipant = state.participants.find(p => p.id === state.localParticipantId)!;
+  const localParticipant = state.participants.find(p => p.id === state.localParticipantId);
 
   const vibeX = useMemo(
     () =>
-      state.participants.reduce((sum, p) => sum + (MOOD_SENTIMENT[p.mood ?? ''] ?? 0), 0) /
-      state.participants.length,
+      state.participants.length
+        ? state.participants.reduce((sum, p) => sum + (MOOD_SENTIMENT[p.mood ?? ''] ?? 0), 0) /
+          state.participants.length
+        : 0,
     [state.participants]
   );
   const vibeY = useMemo(
     () =>
-      state.participants.reduce((sum, p) => sum + (p.tensionInput - 50) * 1.6, 0) /
-      state.participants.length,
+      state.participants.length
+        ? state.participants.reduce((sum, p) => sum + (p.tensionInput - 50) * 1.6, 0) /
+          state.participants.length
+        : 0,
     [state.participants]
   );
 
