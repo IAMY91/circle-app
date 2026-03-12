@@ -48,6 +48,7 @@ export interface CircleState {
 }
 
 export type CircleAction =
+  | { type: 'SET_PARTICIPANTS'; participants: Participant[] }
   | { type: 'SET_MOOD'; participantId: string; mood: Mood | null }
   | { type: 'SET_TENSION'; participantId: string; value: number }
   | { type: 'TOGGLE_HAND'; participantId: string }
