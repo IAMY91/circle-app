@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useMemo, useState, useCallback } from 'react';
+import { useRef, useEffect, useMemo, useState } from 'react';
 import { useCircleState } from '@/hooks/useCircleState';
 import { useTimer } from '@/hooks/useTimer';
 import { useAudio } from '@/hooks/useAudio';
@@ -65,6 +66,7 @@ export default function CircleRoom({
   const [spotifyInput, setSpotifyInput] = useState('');
   const [spotifyState, setSpotifyState] = useState<SharedSpotifyPayload | null>(null);
   const [spotifyError, setSpotifyError] = useState<string | null>(null);
+  const [spotifyEmbed, setSpotifyEmbed] = useState<string | null>(null);
 
   const prevTimerRef = useRef(state.timerSeconds);
   const playRef = useRef(play);
@@ -133,6 +135,12 @@ export default function CircleRoom({
     setSpotifyState(null);
     setSpotifyError(null);
     spotifyChannelRef.current?.postMessage(null);
+  const handleSpotifyConnect = () => {
+    const match = spotifyInput.match(/(?:track|playlist|album)\/([a-zA-Z0-9]+)/);
+    if (!match) return;
+    const typeMatch = spotifyInput.match(/(track|playlist|album)/);
+    const type = typeMatch?.[1] ?? 'track';
+    setSpotifyEmbed(`https://open.spotify.com/embed/${type}/${match[1]}?utm_source=generator`);
   };
 
   const inviteLink = useMemo(
@@ -207,6 +215,13 @@ export default function CircleRoom({
             />
           </>
         )}
+      <div className="absolute right-4 bottom-20 z-30 w-[330px] bg-stone-900/95 border border-stone-700 rounded-2xl p-3 shadow-2xl">
+        <div className="text-sm font-semibold mb-2">Spotify in your space</div>
+        <div className="flex gap-2">
+          <input value={spotifyInput} onChange={e => setSpotifyInput(e.target.value)} placeholder="Paste Spotify track/playlist/album link" className="flex-1 bg-stone-800 rounded-lg px-3 py-2 text-xs outline-none" />
+          <button onClick={handleSpotifyConnect} className="bg-emerald-500 hover:bg-emerald-400 text-black font-medium px-3 rounded-lg text-xs">Connect</button>
+        </div>
+        {spotifyEmbed && <iframe src={spotifyEmbed} width="100%" height="152" className="rounded-xl mt-3" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" />}
       </div>
 
       <div className="relative z-20">

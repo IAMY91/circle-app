@@ -61,6 +61,7 @@ export function useSpacePresence(spaceId: string, name: string, initialMuted: bo
 
   useEffect(() => {
     setLocalParticipant(prev => ({ ...prev, name, isFacilitator: true }));
+    setLocalParticipant(prev => ({ ...prev, name }));
   }, [name]);
 
   useEffect(() => {
@@ -149,6 +150,7 @@ export function useSpacePresence(spaceId: string, name: string, initialMuted: bo
 
   const patchLocalParticipant = useCallback((patch: Partial<Participant>) => {
     setLocalParticipant(prev => ({ ...prev, ...patch, isFacilitator: true }));
+    setLocalParticipant(prev => ({ ...prev, ...patch }));
   }, []);
 
   const participants = useMemo(
