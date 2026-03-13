@@ -1,8 +1,7 @@
 'use client';
 
-import { useReducer, useEffect, useMemo } from 'react';
-import { CircleState, CircleAction, ChatMessage, OracleCard } from '@/types';
-import { MOCK_PARTICIPANTS } from '@/lib/mockParticipants';
+import { useReducer, useMemo } from 'react';
+import { CircleState, CircleAction, ChatMessage, OracleCard, Participant, Theme, CentralElement } from '@/types';
 
 const now = Date.now();
 const INITIAL_MESSAGES: ChatMessage[] = [
@@ -11,23 +10,8 @@ const INITIAL_MESSAGES: ChatMessage[] = [
     participantId: 'system',
     name: 'Circle Guide',
     text: 'Welcome. Take a breath and arrive fully. 🌿',
-    timestamp: now - 8 * 60 * 1000,
-    reactions: { '🙏': 3, '💛': 2 },
-  },
-  {
-    id: 'msg-1',
-    participantId: 'p2',
-    name: 'Luna',
-    text: 'Grateful to hold this space with you all.',
-    timestamp: now - 5 * 60 * 1000,
-    reactions: { '💛': 4 },
-  },
-  {
-    id: 'msg-2',
-    participantId: 'p3',
-    name: 'Aria',
-    text: 'Holding with **love** and *presence*.',
     timestamp: now - 2 * 60 * 1000,
+    reactions: { '🙏': 1 },
   },
 ];
 
@@ -42,31 +26,65 @@ export const ORACLE_DECK: OracleCard[] = [
   { icon: '🌿', title: 'Renewal', text: '"Growth happens in the spaces between words."' },
 ];
 
-// Maps mood emoji to pleasantness score (-100 to +100)
 const MOOD_SENTIMENT: Record<string, number> = {
-  '😊': 70, '🤩': 60, '🔥': 50, '😌': 60,
-  '😢': -60, '😔': -40, '😤': -70, '😰': -50,
+  '😊': 70,
+  '🤩': 60,
+  '🔥': 50,
+  '😌': 60,
+  '😢': -60,
+  '😔': -40,
+  '😤': -70,
+  '😰': -50,
 };
 
-const initialState: CircleState = {
-  participants: MOCK_PARTICIPANTS,
-  localParticipantId: 'local',
-  activeSpeakerId: null,
-  centralElement: 'fire',
-  chatMessages: INITIAL_MESSAGES,
-  isChatOpen: false,
-  isSidebarOpen: false,
-  timerSeconds: 0,
-  timerRunning: false,
-  talkingStickHolderId: 'local',
-  isPassingStickMode: false,
-  theme: 'earth',
-  oracleCard: null,
-  isCircleSealed: false,
-};
+function buildInitialState(
+  participants: Participant[],
+  localParticipantId: string,
+  initialTheme: Theme,
+  initialCentralElement: CentralElement
+): CircleState {
+  return {
+    participants,
+    localParticipantId,
+    activeSpeakerId: localParticipantId,
+    centralElement: initialCentralElement,
+    chatMessages: INITIAL_MESSAGES,
+    isChatOpen: false,
+    isSidebarOpen: false,
+    timerSeconds: 0,
+    timerRunning: false,
+    talkingStickHolderId: localParticipantId,
+    isPassingStickMode: false,
+    theme: initialTheme,
+    oracleCard: null,
+    isCircleSealed: false,
+  };
+}
 
 function reducer(state: CircleState, action: CircleAction): CircleState {
   switch (action.type) {
+    case 'SET_PARTICIPANTS': {
+      const previousById = new Map(state.participants.map(p => [p.id, p]));
+      const mergedParticipants = action.participants.map(participant => {
+        const existing = previousById.get(participant.id);
+        if (!existing) return participant;
+        return {
+          ...participant,
+          handRaised: existing.handRaised,
+          mood: existing.mood,
+          tensionInput: existing.tensionInput,
+          isFacilitator: existing.isFacilitator ?? participant.isFacilitator,
+        };
+      });
+      return {
+        ...state,
+        participants: mergedParticipants,
+        activeSpeakerId:
+          state.activeSpeakerId && mergedParticipants.some(p => p.id === state.activeSpeakerId)
+            ? state.activeSpeakerId
+            : mergedParticipants[0]?.id ?? null,
+      };
+    }
     case 'SET_MOOD':
       return {
         ...state,
@@ -126,11 +144,6 @@ function reducer(state: CircleState, action: CircleAction): CircleState {
         ...state,
         talkingStickHolderId: action.participantId,
         isPassingStickMode: false,
-        participants: action.participantId
-          ? state.participants.map(p =>
-              p.id === action.participantId ? { ...p, handRaised: false } : p
-            )
-          : state.participants,
       };
     case 'SET_PASSING_STICK_MODE':
       return { ...state, isPassingStickMode: action.active };
@@ -162,26 +175,25 @@ function reducer(state: CircleState, action: CircleAction): CircleState {
   }
 }
 
-export function useCircleState() {
-  const [state, dispatch] = useReducer(reducer, initialState);
-
-  // Rotate the active speaker every 4s to simulate a live call
-  useEffect(() => {
-    const ids = MOCK_PARTICIPANTS.map(p => p.id);
-    let i = 0;
-    const interval = setInterval(() => {
-      i = (i + 1) % ids.length;
-      dispatch({ type: 'SET_ACTIVE_SPEAKER', id: ids[i] });
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
+export function useCircleState(
+  participants: Participant[],
+  localParticipantId: string,
+  initialTheme: Theme,
+  initialCentralElement: CentralElement
+) {
+  const [state, dispatch] = useReducer(
+    reducer,
+    undefined,
+    () => buildInitialState(participants, localParticipantId, initialTheme, initialCentralElement)
+  );
 
   const avgTension = useMemo(
     () =>
-      Math.round(
-        state.participants.reduce((sum, p) => sum + p.tensionInput, 0) /
-          state.participants.length
-      ),
+      state.participants.length
+        ? Math.round(
+            state.participants.reduce((sum, p) => sum + p.tensionInput, 0) / state.participants.length
+          )
+        : 0,
     [state.participants]
   );
 
@@ -190,19 +202,22 @@ export function useCircleState() {
     [state.participants]
   );
 
-  const localParticipant = state.participants.find(p => p.id === state.localParticipantId)!;
+  const localParticipant = state.participants.find(p => p.id === state.localParticipantId);
 
-  // Vibe X = pleasantness from moods, Y = energy from tension
   const vibeX = useMemo(
     () =>
-      state.participants.reduce((sum, p) => sum + (MOOD_SENTIMENT[p.mood ?? ''] ?? 0), 0) /
-      state.participants.length,
+      state.participants.length
+        ? state.participants.reduce((sum, p) => sum + (MOOD_SENTIMENT[p.mood ?? ''] ?? 0), 0) /
+          state.participants.length
+        : 0,
     [state.participants]
   );
   const vibeY = useMemo(
     () =>
-      state.participants.reduce((sum, p) => sum + (p.tensionInput - 50) * 1.6, 0) /
-      state.participants.length,
+      state.participants.length
+        ? state.participants.reduce((sum, p) => sum + (p.tensionInput - 50) * 1.6, 0) /
+          state.participants.length
+        : 0,
     [state.participants]
   );
 
