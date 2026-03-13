@@ -73,6 +73,7 @@ function reducer(state: CircleState, action: CircleAction): CircleState {
           handRaised: existing.handRaised,
           mood: existing.mood,
           tensionInput: existing.tensionInput,
+          isFacilitator: existing.isFacilitator ?? participant.isFacilitator,
         };
       });
       return {

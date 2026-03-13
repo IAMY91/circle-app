@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef, useEffect, useMemo, useState, useCallback } from 'react';
 import { useRef, useEffect, useMemo, useState } from 'react';
 import { useCircleState } from '@/hooks/useCircleState';
 import { useTimer } from '@/hooks/useTimer';
@@ -23,6 +24,30 @@ interface CircleRoomProps {
   symbol: string;
 }
 
+type SharedSpotifyPayload = {
+  input: string;
+  embedUrl: string;
+  sharedBy: string;
+  updatedAt: number;
+};
+
+function getSpotifyEmbedUrl(rawInput: string): string | null {
+  const input = rawInput.trim();
+  if (!input) return null;
+
+  const uriMatch = input.match(/^spotify:(track|album|playlist|episode|show):([a-zA-Z0-9]+)$/i);
+  if (uriMatch) {
+    return `https://open.spotify.com/embed/${uriMatch[1].toLowerCase()}/${uriMatch[2]}?utm_source=generator`;
+  }
+
+  const urlMatch = input.match(/open\.spotify\.com\/(track|album|playlist|episode|show)\/([a-zA-Z0-9]+)/i);
+  if (urlMatch) {
+    return `https://open.spotify.com/embed/${urlMatch[1].toLowerCase()}/${urlMatch[2]}?utm_source=generator`;
+  }
+
+  return null;
+}
+
 export default function CircleRoom({
   localName,
   initialMicOn,
@@ -39,10 +64,13 @@ export default function CircleRoom({
   const { start, pause, reset } = useTimer(dispatch, state.timerRunning);
   const { play } = useAudio();
   const [spotifyInput, setSpotifyInput] = useState('');
+  const [spotifyState, setSpotifyState] = useState<SharedSpotifyPayload | null>(null);
+  const [spotifyError, setSpotifyError] = useState<string | null>(null);
   const [spotifyEmbed, setSpotifyEmbed] = useState<string | null>(null);
 
   const prevTimerRef = useRef(state.timerSeconds);
   const playRef = useRef(play);
+  const spotifyChannelRef = useRef<BroadcastChannel | null>(null);
   playRef.current = play;
 
   useEffect(() => {
@@ -62,12 +90,51 @@ export default function CircleRoom({
     prevTimerRef.current = state.timerSeconds;
   }, [state.timerSeconds]);
 
+  useEffect(() => {
+    const channel = new BroadcastChannel(`circle-spotify-${spaceId}`);
+    spotifyChannelRef.current = channel;
+
+    const onMessage = (event: MessageEvent<SharedSpotifyPayload | null>) => {
+      setSpotifyState(event.data);
+    };
+
+    channel.addEventListener('message', onMessage);
+    return () => {
+      channel.removeEventListener('message', onMessage);
+      channel.close();
+      spotifyChannelRef.current = null;
+    };
+  }, [spaceId]);
+
   const handleTileClick = (participantId: string) => {
     if (state.isPassingStickMode) {
       dispatch({ type: 'SET_TALKING_STICK', participantId });
     }
   };
 
+  const handleSpotifyConnect = useCallback(() => {
+    const embedUrl = getSpotifyEmbedUrl(spotifyInput);
+    if (!embedUrl) {
+      setSpotifyError('Please paste a valid Spotify track/album/playlist/episode/show link or spotify: URI.');
+      return;
+    }
+
+    const next: SharedSpotifyPayload = {
+      input: spotifyInput.trim(),
+      embedUrl,
+      sharedBy: localParticipant?.name || 'Someone',
+      updatedAt: Date.now(),
+    };
+
+    setSpotifyState(next);
+    setSpotifyError(null);
+    spotifyChannelRef.current?.postMessage(next);
+  }, [localParticipant?.name, spotifyInput]);
+
+  const clearSpotify = () => {
+    setSpotifyState(null);
+    setSpotifyError(null);
+    spotifyChannelRef.current?.postMessage(null);
   const handleSpotifyConnect = () => {
     const match = spotifyInput.match(/(?:track|playlist|album)\/([a-zA-Z0-9]+)/);
     if (!match) return;
@@ -117,6 +184,37 @@ export default function CircleRoom({
         </div>
       </div>
 
+      <div className="absolute right-4 bottom-20 z-30 w-[360px] bg-stone-900/95 border border-stone-700 rounded-2xl p-3 shadow-2xl">
+        <div className="text-sm font-semibold mb-2">Spotify in your space</div>
+        <div className="flex gap-2">
+          <input
+            value={spotifyInput}
+            onChange={e => setSpotifyInput(e.target.value)}
+            placeholder="Paste Spotify link or spotify:track:..."
+            className="flex-1 bg-stone-800 rounded-lg px-3 py-2 text-xs outline-none"
+          />
+          <button onClick={handleSpotifyConnect} className="bg-emerald-500 hover:bg-emerald-400 text-black font-medium px-3 rounded-lg text-xs">
+            Share
+          </button>
+        </div>
+        {spotifyError && <div className="mt-2 text-[11px] text-red-300">{spotifyError}</div>}
+
+        {spotifyState && (
+          <>
+            <div className="mt-2 text-[11px] text-stone-400 flex items-center justify-between">
+              <span>Shared by {spotifyState.sharedBy}</span>
+              <button onClick={clearSpotify} className="text-stone-300 hover:text-white underline underline-offset-2">Clear</button>
+            </div>
+            <iframe
+              src={spotifyState.embedUrl}
+              width="100%"
+              height="152"
+              className="rounded-xl mt-2"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              loading="lazy"
+            />
+          </>
+        )}
       <div className="absolute right-4 bottom-20 z-30 w-[330px] bg-stone-900/95 border border-stone-700 rounded-2xl p-3 shadow-2xl">
         <div className="text-sm font-semibold mb-2">Spotify in your space</div>
         <div className="flex gap-2">

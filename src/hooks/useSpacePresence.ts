@@ -60,6 +60,7 @@ export function useSpacePresence(spaceId: string, name: string, initialMuted: bo
   const localRef = useRef(localParticipant);
 
   useEffect(() => {
+    setLocalParticipant(prev => ({ ...prev, name, isFacilitator: true }));
     setLocalParticipant(prev => ({ ...prev, name }));
   }, [name]);
 
@@ -148,6 +149,7 @@ export function useSpacePresence(spaceId: string, name: string, initialMuted: bo
   }, [localParticipant, post]);
 
   const patchLocalParticipant = useCallback((patch: Partial<Participant>) => {
+    setLocalParticipant(prev => ({ ...prev, ...patch, isFacilitator: true }));
     setLocalParticipant(prev => ({ ...prev, ...patch }));
   }, []);
 
